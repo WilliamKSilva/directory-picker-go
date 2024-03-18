@@ -180,15 +180,15 @@ func createShellScript(path string) {
 }
 
 func (d *DirState) GetSimilarDir(path string) {
-    dirState.toRenderDir = nil
+    d.toRenderDir = nil
 
-    for _, dir := range dirState.allDir {
-        if len(dirState.toRenderDir) == 10 {
+    for _, dir := range d.allDir {
+        if len(d.toRenderDir) == 10 {
             break
         }
 
         if (strings.Contains(dir, path)) {
-            dirState.AddDir(dir)
+            d.AddDir(dir)
         }
     }
 }

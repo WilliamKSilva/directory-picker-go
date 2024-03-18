@@ -73,9 +73,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                     m.typed = true
                 }
 
+                dirState.toRenderDir = nil
+
                 m.path += msg.String()
 
                 for _, dir := range dirState.allDir {
+                    if len(dirState.toRenderDir) == 10 {
+                        break
+                    }
+
                     if (strings.Contains(dir, m.path)) {
                         dirState.AddDir(dir)
                     }
@@ -98,7 +104,7 @@ func (m model) View() string {
         }
     }
 
-    for _, dir := range m.dir {
+    for _, dir := range dirState.toRenderDir {
         s += dir
         s += "\n"
     }

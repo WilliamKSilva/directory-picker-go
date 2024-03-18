@@ -19,6 +19,7 @@ type model struct {
     path string
     typed bool
     cursor int
+    selected string
 }
 
 const basePath string = "/home/william/Projects/directory-finder-go"
@@ -63,14 +64,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             switch msg.String() {
             case "ctrl+c", "q":
                 return m, tea.Quit
+            case "up":
+                m.cursor--
+            case "down":
+                m.cursor++
             case "backspace":
                 pathLen := len(m.path) 
                 m.path = m.path[:pathLen - 1]
 
                 dirState.GetSimilarDir(m.path)
             case "enter":
-                // createShellScript(m.path)
-                // return m, tea.Quit
+                createShellScript(dirState.toRenderDir[m.cursor])
+                return m, tea.Quit
             default:
                 if !m.typed {
                     m.typed = true
@@ -97,7 +102,11 @@ func (m model) View() string {
         }
     }
 
-    for _, dir := range dirState.toRenderDir {
+    for i, dir := range dirState.toRenderDir {
+        if m.cursor == i {
+            s += "> "
+        }
+
         s += dir
         s += "\n"
     }
@@ -160,7 +169,7 @@ func createShellScript(path string) {
         }
     }
 
-    s := fmt.Sprintf("#!/bin/bash\ncd %s", path)
+    s := fmt.Sprintf("#!/bin/bash\ncd %s", fmt.Sprintf("/%s", path))
     err = os.WriteFile(f, []byte(s), 0666)
 
     if err != nil {

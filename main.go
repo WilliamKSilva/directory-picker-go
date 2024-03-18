@@ -128,6 +128,10 @@ func (m model) getAllDir() {
             os.Exit(1)
         }
 
+        if !d.IsDir() {
+            return nil
+        }
+
         skip := false
         for i := 0; i < len(dirIgnore); i++ {
             if (dirIgnore[i] == path) {

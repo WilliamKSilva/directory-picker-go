@@ -71,6 +71,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 m.cursor++
             case "backspace":
                 pathLen := len(m.path) 
+                if pathLen == 0 {
+                    break
+                }
+
                 m.path = m.path[:pathLen - 1]
 
                 dirState.GetSimilarDir(m.path)
@@ -95,13 +99,15 @@ func (m model) View() string {
     s := ""
     if !m.typed {
         s += "Type an directory path\n\n"
-    } else {
+    }
+
+    /* else {
         if m.checkDirExists() {
             s += "Exists\n\n"
         } else {
             s += "Dont exist\n\n"
         }
-    }
+    } */
 
     for i, dir := range dirState.toRenderDir {
         if m.cursor == i {

@@ -22,6 +22,7 @@ type model struct {
     selected string
 }
 
+// TODO: This should be dynamic where your go binary is located
 const basePath string = "/home/william/Projects/directory-finder-go"
 
 var dirIgnore = []string {

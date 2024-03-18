@@ -1,4 +1,4 @@
-module github.com/WilliamKSilva/directory-finder-go
+module github.com/WilliamKSilva/directory-picker-go
 
 go 1.22.1
 

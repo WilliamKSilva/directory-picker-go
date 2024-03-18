@@ -48,6 +48,7 @@ func main() {
 func initialModel() model {
     return model{
         path: "",
+        cursor: 0,
     }
 }
 
@@ -65,6 +66,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             case "backspace":
                 pathLen := len(m.path) 
                 m.path = m.path[:pathLen - 1]
+
+                dirState.GetSimilarDir(m.path)
             case "enter":
                 // createShellScript(m.path)
                 // return m, tea.Quit
@@ -73,19 +76,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                     m.typed = true
                 }
 
-                dirState.toRenderDir = nil
-
                 m.path += msg.String()
 
-                for _, dir := range dirState.allDir {
-                    if len(dirState.toRenderDir) == 10 {
-                        break
-                    }
-
-                    if (strings.Contains(dir, m.path)) {
-                        dirState.AddDir(dir)
-                    }
-                }
+                dirState.GetSimilarDir(m.path)
             }
     }
 
@@ -176,6 +169,20 @@ func createShellScript(path string) {
     }
 }
 
+func (d *DirState) GetSimilarDir(path string) {
+    dirState.toRenderDir = nil
+
+    for _, dir := range dirState.allDir {
+        if len(dirState.toRenderDir) == 10 {
+            break
+        }
+
+        if (strings.Contains(dir, path)) {
+            dirState.AddDir(dir)
+        }
+    }
+}
+
 func (d *DirState) AddDir(path string) {
-    d.toRenderDir = append(dirState.toRenderDir, path)
+    d.toRenderDir = append(d.toRenderDir, path)
 }

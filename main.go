@@ -7,6 +7,8 @@ import (
     "fmt"
     "strings"
     "encoding/json"
+    "slices"
+    "cmp"
 
     tea "github.com/charmbracelet/bubbletea"
 )
@@ -26,11 +28,12 @@ type model struct {
 
 type DirFrequence struct {
     Name string `json:"name"`
+    Input string `json:"input"`
     Frequence int `json:"frequence"`
 }
 
-const basePath string = "/usr/local/directory-picker-go"
-const dirFrequencePath string = "/usr/local/directory-picker-go/frequence.json"
+const basePath string = "/home/william/Projects/directory-picker-go"
+const dirFrequencePath string = "/home/william/Projects/directory-picker-go/frequence.json"
 
 var dirIgnore = []string {
     "afs",
@@ -87,8 +90,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 dirState.GetSimilarDir(m.path)
             case "enter":
                 dirState.currentDir = dirState.toRenderDir[m.cursor]
-                dirState.SaveDirFrequence()
-                createShellScript(dirState.currentDir)
+                dirState.SaveDirFrequence(m.path)
+                dirState.CreateShellScript()
                 return m, tea.Quit
             default:
                 if !m.typed {
@@ -179,7 +182,7 @@ func (m model) checkDirExists() bool {
     return true
 }
 
-func createShellScript(path string) {
+func (d *DirState) CreateShellScript() {
     f := fmt.Sprintf("%s/change-directory.sh", basePath)
     err := os.Remove(f)
 
@@ -189,7 +192,7 @@ func createShellScript(path string) {
         }
     }
 
-    s := fmt.Sprintf("#!/bin/bash\ncd %s", fmt.Sprintf("/%s", path))
+    s := fmt.Sprintf("#!/bin/bash\ncd %s", fmt.Sprintf("/%s", d.currentDir))
     err = os.WriteFile(f, []byte(s), 0666)
 
     if err != nil {
@@ -201,9 +204,24 @@ func createShellScript(path string) {
 func (d *DirState) GetSimilarDir(path string) {
     d.toRenderDir = nil
 
+    /*
+        Get most frequent directories that are similar to the path provided
+        to render
+    */
+    d.GetMostFrequent(path)
+
+    /* Fill up to 10 directories if there were not 10 most frequent found */
     for _, dir := range d.allDir {
         if len(d.toRenderDir) == 10 {
             break
+        }
+
+        alreadyExists := slices.ContainsFunc(d.toRenderDir, func(dirName string) bool {
+            return dirName == dir
+        })
+
+        if alreadyExists {
+            continue 
         }
 
         if (strings.Contains(dir, path)) {
@@ -212,7 +230,7 @@ func (d *DirState) GetSimilarDir(path string) {
     }
 }
 
-func (d *DirState) SaveDirFrequence() {
+func (d *DirState) SaveDirFrequence(userInput string) {
     data, err := os.ReadFile(dirFrequencePath)
 
     var dirFrequences []DirFrequence
@@ -239,6 +257,7 @@ func (d *DirState) SaveDirFrequence() {
     if err != nil {
         frequence := DirFrequence{
             Name: d.currentDir,
+            Input: userInput,
             Frequence: 1,
         }
 
@@ -253,16 +272,17 @@ func (d *DirState) SaveDirFrequence() {
         }
 
         frequenceExists := false
-        for _, dir := range dirFrequences {
+        for i, dir := range dirFrequences {
             if dir.Name == d.currentDir {
                 frequenceExists = true
-                dir.Frequence++
+                dirFrequences[i].Frequence++
             }
         }
 
         if !frequenceExists {
             frequence := DirFrequence{
                 Name: d.currentDir,
+                Input: userInput,
                 Frequence: 1,
             }
 
@@ -273,7 +293,7 @@ func (d *DirState) SaveDirFrequence() {
     updatedDirFrequences, err := json.Marshal(dirFrequences)
 
     if err != nil {
-        log.Println("Marshal updatedFrequences")
+        log.Println("Error marshal updatedDirFrequences")
         log.Println(err)
 
         os.Exit(1)
@@ -288,6 +308,45 @@ func (d *DirState) SaveDirFrequence() {
         os.Exit(1)
     }
 } 
+
+func (d *DirState) GetMostFrequent(path string) {
+    data, err := os.ReadFile(dirFrequencePath)
+
+    if err != nil {
+        if !os.IsNotExist(err) {
+            log.Println("Error trying to open frequent.json")
+            log.Println(err)
+            os.Exit(1)
+        }
+    }
+
+    /* Append frequent directories to toRenderDir slice if there is data stored */
+    if err == nil {
+        var dirFrequence []DirFrequence
+        err = json.Unmarshal(data, &dirFrequence)
+
+        if err != nil {
+            log.Println("Error on dirFrequence unmarshal")
+            log.Println(err)
+            os.Exit(1)
+        }
+
+        var mostFrequent []DirFrequence
+        for _, dir := range dirFrequence {
+            if (strings.Contains(dir.Input, path)) {
+                mostFrequent = append(mostFrequent, dir)
+            }
+        }
+
+        slices.SortFunc(mostFrequent, func(dir1 , dir2 DirFrequence) int {
+            return cmp.Compare(dir2.Frequence, dir1.Frequence) 
+        })
+
+        for _, dir := range mostFrequent {
+            d.toRenderDir = append(d.toRenderDir, dir.Name)
+        }
+    }
+}
 
 func (d *DirState) AddDir(path string) {
     d.toRenderDir = append(d.toRenderDir, path)

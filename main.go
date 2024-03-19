@@ -6,6 +6,7 @@ import (
     "log"
     "fmt"
     "strings"
+    "encoding/json"
 
     tea "github.com/charmbracelet/bubbletea"
 )
@@ -13,6 +14,7 @@ import (
 type DirState struct {
     allDir []string
     toRenderDir []string
+    currentDir string
 }
 
 type model struct {
@@ -22,8 +24,13 @@ type model struct {
     selected string
 }
 
-// TODO: This should be dynamic where your go binary is located
-const basePath string = "/home/william/Projects/directory-picker-go"
+type DirFrequence struct {
+    Name string `json:"name"`
+    Frequence int `json:"frequence"`
+}
+
+const basePath string = "/usr/local/directory-picker-go"
+const dirFrequencePath string = "/usr/local/directory-picker-go/frequence.json"
 
 var dirIgnore = []string {
     "afs",
@@ -79,7 +86,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
                 dirState.GetSimilarDir(m.path)
             case "enter":
-                createShellScript(dirState.toRenderDir[m.cursor])
+                dirState.currentDir = dirState.toRenderDir[m.cursor]
+                dirState.SaveDirFrequence()
+                createShellScript(dirState.currentDir)
                 return m, tea.Quit
             default:
                 if !m.typed {
@@ -202,6 +211,83 @@ func (d *DirState) GetSimilarDir(path string) {
         }
     }
 }
+
+func (d *DirState) SaveDirFrequence() {
+    data, err := os.ReadFile(dirFrequencePath)
+
+    var dirFrequences []DirFrequence
+
+    if err != nil {
+        if !os.IsNotExist(err)  {
+            log.Println("Unknown error")
+            log.Println(err)
+            os.Exit(1)
+        }
+    }
+    
+    /* 
+        Since we check for errors different than IsNotExist before, if an error
+        occurs, surely is the IsNotExist error, so we must initialize the array data with
+        the first dir frequence and dont need to load the previous JSON data, since it
+        dont exist yet.
+
+        If we dont get the IsNotExist error, the file exists and some data
+        already is saved, so we need to check if the dir frequence that we are going
+        to save already exists (just update) or we must create it.
+    */
+
+    if err != nil {
+        frequence := DirFrequence{
+            Name: d.currentDir,
+            Frequence: 1,
+        }
+
+        dirFrequences = append(dirFrequences, frequence)
+    } else {
+        err = json.Unmarshal(data, &dirFrequences)
+
+        if err != nil {
+            log.Println("Unmarshall existing frequences")
+            log.Println(err)
+            os.Exit(1)
+        }
+
+        frequenceExists := false
+        for _, dir := range dirFrequences {
+            if dir.Name == d.currentDir {
+                frequenceExists = true
+                dir.Frequence++
+            }
+        }
+
+        if !frequenceExists {
+            frequence := DirFrequence{
+                Name: d.currentDir,
+                Frequence: 1,
+            }
+
+            dirFrequences = append(dirFrequences, frequence)
+        }
+    }
+
+    updatedDirFrequences, err := json.Marshal(dirFrequences)
+
+    if err != nil {
+        log.Println("Marshal updatedFrequences")
+        log.Println(err)
+
+        os.Exit(1)
+    }
+
+    err = os.WriteFile(dirFrequencePath, []byte(updatedDirFrequences), 0666)
+
+    if err != nil {
+        log.Println("Error writing to frequences file")
+        log.Println(err)
+
+        os.Exit(1)
+    }
+} 
 
 func (d *DirState) AddDir(path string) {
     d.toRenderDir = append(d.toRenderDir, path)

@@ -2,7 +2,7 @@
 https://github.com/WilliamKSilva/directory-picker-go/assets/75429175/db55cac3-7315-4ff8-81c1-56e26e955313
 
 # Install
-- Check the release page to download the .tar.gz for linux and follow the instructions: https://github.com/WilliamKSilva/directory-picker-go/releases
+- Check the releases page to download the .tar.gz for linux and follow the instructions: https://github.com/WilliamKSilva/directory-picker-go/releases
 
 # Next steps
 - [X] Record basic video showing the current state of the TUI

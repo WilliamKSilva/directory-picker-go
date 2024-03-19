@@ -1,8 +1,13 @@
 # Demonstration
 https://github.com/WilliamKSilva/directory-picker-go/assets/75429175/db55cac3-7315-4ff8-81c1-56e26e955313
 
-# Install
-- Check the releases page to download the .tar.gz for linux and follow the instructions: https://github.com/WilliamKSilva/directory-picker-go/releases
+# Installation
+- Check the releases page to download the .tar.gz for linux: https://github.com/WilliamKSilva/directory-picker-go/releases
+- To install the application run:
+    `rm -rf /usr/local/directory-picker-go && tar -C /usr/local -xzf directory-picker-go.tar.gz` (You may need to run as sudo)
+- Will also need to add an alias on your shell config file (.bashrc or .zshrc):
+    `alias dp='sudo /usr/local/directory-picker-go/bin/directory-picker-go && source /usr/local/directory-picker-go/change-directory.sh'`
+    This is needed so the shell can invoke the cd command based on the path saved on an .sh file stored on the root of the application at /usr/local
 
 # Next steps
 - [X] Record basic video showing the current state of the TUI

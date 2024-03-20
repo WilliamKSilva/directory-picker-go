@@ -14,7 +14,9 @@ https://github.com/WilliamKSilva/directory-picker-go/assets/75429175/db55cac3-73
 - [X] Add better docs showing how to install and run the TUI without
 the need of building from source
 - [X] Most visited directories show up at the top of the list
-- Some basic customization (dont want the TUI to be so bloated)
+- [ ] Add initial most common directories for user to choose before some frequence is already established
+Example: If you type "local" before having already visited /usr/local/, /usr/local will not appear in the list, will you have to type "usr/local" to go to this directory for the first time.
+- [ ] Some basic customization (dont want the TUI to be so bloated)
 
 # How to build
 - You need Go toolchain installed

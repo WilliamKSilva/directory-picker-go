@@ -32,8 +32,8 @@ type DirFrequence struct {
     Frequence int `json:"frequence"`
 }
 
-const basePath string = "/home/william/Projects/directory-picker-go"
-const dirFrequencePath string = "/home/william/Projects/directory-picker-go/frequence.json"
+const basePath string = "/usr/local/directory-picker-go"
+const dirFrequencePath string = "/usr/local/directory-picker-go/frequence.json"
 
 var dirIgnore = []string {
     "afs",

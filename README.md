@@ -6,7 +6,7 @@ https://github.com/WilliamKSilva/directory-picker-go/assets/75429175/db55cac3-73
 - To install the application run:
     `rm -rf /usr/local/directory-picker-go && tar -C /usr/local -xzf directory-picker-go.tar.gz` (You may need to run as sudo)
 - Will also need to add an alias on your shell config file (.bashrc or .zshrc):
-    `alias dp='sudo /usr/local/directory-picker-go/bin/directory-picker-go && source /usr/local/directory-picker-go/change-directory.sh'`
+    `alias dp='/usr/local/directory-picker-go/bin/directory-picker-go && source /usr/local/directory-picker-go/change-directory.sh'`
     This is needed so the shell can invoke the cd command based on the path saved on an .sh file stored on the root of the application at /usr/local
 
 # Next steps

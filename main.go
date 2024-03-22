@@ -32,8 +32,8 @@ type DirFrequence struct {
     Frequence int `json:"frequence"`
 }
 
-const basePath string = "/usr/local/directory-picker-go"
-const dirFrequencePath string = "/usr/local/directory-picker-go/frequence.json"
+const basePath string = "/home/william/Projects/directory-picker-go"
+const dirFrequencePath string = "/home/william/Projects/directory-picker-go/frequence.json"
 
 var dirIgnore = []string {
     "afs",
@@ -142,8 +142,10 @@ func (m model) getAllDir() {
     fileSystem := os.DirFS(root)
     fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
         if err != nil {
-            log.Println(err)
-            os.Exit(1)
+            if err == fs.ErrPermission {
+                log.Println(err)
+                os.Exit(1)
+            }
         }
 
         if !d.IsDir() {
